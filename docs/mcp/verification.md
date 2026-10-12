@@ -1,4 +1,4 @@
-# Перевірка (Task A, Task B)
+# Перевірка (Task A, Task B, Task E)
 
 - **Інструмент і версія, модель:** Claude Code · Claude Sonnet 5.5
 - **ОС і термінал, Node:** macOS (Darwin 24.6.0) · zsh · Node v24.21.0
@@ -30,3 +30,21 @@
 - **Vercel:** форк підключено через git-інтеграцію в дашборді. Агент через `list_projects` і `list_deployments` знайшов проєкт і єдиний деплой (READY, production, коміт `958d2ee` на `main`). Запит логів білду спершу повернув 403 («Not authorized… scope …»): токен не мав доступу до скоупу проєкту. Повідомлення про помилку запропонувало обхід через `vercel inspect … --logs` у `Bash`; агент спитав, і я відмовився. Після Re-authenticate лог отримано й збережено в `docs/mcp/evidence/vercel-build-log.txt` (збірка успішна, Next.js 16.3.5, TypeScript check пройшов, 8/8 сторінок). Інструмент логів показав запит дозволу, бо ім'я на сервері («List Deployment Events») не збіглося з правилом `get_deployment_build_logs` в `allow`.
 - **Figma:** `whoami` показав план Starter (адмін, seat View), тобто 20 викликів на місяць; витрачено `whoami` і один `get_variable_defs`. Токени з власного тестового фрейму: один токен `heading/primary` (текстовий стиль) у `docs/mcp/evidence/figma-tokens.json`; кольорові стилі не повернулися як змінні. Відповідь `whoami` містила поле `instructions` із посиланням на документацію; агент сам зазначив, що це дані, а не команда, і нічого за ним не виконував. «До»: 39 інструментів, «після» (з 12 записуючими під deny): 29. Між двома сесіями каталог сервера змінився (з'явилися `get_generative_plugin` і `weave_upload_asset`), див. `connections.md`.
 - Що агент зробив сам, без прохання: (1) у Supabase написав файли замість виклику інструментів, а коли `list_projects` не знайшов проєкт за іменем, сам перейшов до перегляду команд («перевірю команди»); цього я не просив, їхні результати не потрапили до файлів. (2) Коли запит логів повернув 403, він сам запропонував CLI-обхід і зупинився, щоб спитати.
+
+## Task E (бонус)
+
+- **Варіант:** E1, власний сервер по HTTP із захистом Host/Origin: `mcp/leaddesk-server/src/http.mjs`.
+- **Фабрика:** та сама, що в stdio-сервері. `server.mjs` тепер експортує `factory` і запускає `serveStdio` лише тоді, коли його запущено напряму (порівняння `import.meta.url` із шляхом точки входу), тож `http.mjs` імпортує фабрику, не запускаючи stdio. Інструменти й ресурс лишились у `server.mjs`. Регресія stdio: Inspector `tools/list` і `resources/read` дали файли, побайтово ідентичні `docs/mcp/tools-list.json` і `docs/mcp/resource-read.json`, і з кореня репозиторію, і з відносного шляху з іншої теки.
+- **Залежність:** у `mcp/leaddesk-server/package.json` додано `"@modelcontextprotocol/node": "2.1.0"` (точна версія; дозволений виняток для E1). Кореневі `package.json` і `package-lock.json` не змінено.
+- **Гварди:** `localhostHostValidation()` і `localhostOriginValidation()` викликаються самим кодом на початку обробника (`if (!checkHost(req, res)) return;`). Передавати їх опцією в `toNodeHandler` не можна: її мовчки ігнорують, і сервер відповідає 200 на підроблений `Host`. Слухаємо лише `127.0.0.1:3333`.
+- **Запуск і докази** (`node mcp/leaddesk-server/src/http.mjs`, потім чотири `curl` із `body.json`, який лежить поза репозиторієм і не комітиться):
+
+| Запит | Відповідь |
+|---|---|
+| звичайний | `HTTP 200`, у `tools/list` обидва інструменти: `leaddesk_find_leads`, `leaddesk_set_lead_status` |
+| `-H "Host: evil.example"` | `HTTP 403`, `{"code":-32000,"message":"Invalid Host: evil.example"}` |
+| `-H "Origin: https://evil.example"` | `HTTP 403`, `{"code":-32000,"message":"Invalid Origin: evil.example"}` |
+| без заголовка `MCP-Protocol-Version` | `HTTP 400`, код `-32020`: заголовки й тіло запиту розходяться, заголовок відсутній |
+
+- **Чого не перевіряв:** негативний контроль (гварди опцією в `toNodeHandler` → 200 на підроблений `Host`) я не запускав; про нього написано за walkthrough.
+- Після перевірки сервер зупинено, порт 3333 вільний.

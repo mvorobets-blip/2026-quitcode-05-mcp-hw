@@ -7,8 +7,8 @@
 // changes live in process memory only, and the file is never rewritten.
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { z } from "zod";
 
 const FIXTURE = process.env.LEADDESK_FIXTURE ?? fileURLToPath(new URL("../fixtures/leads.json", import.meta.url));
@@ -107,4 +107,9 @@ const factory = () => {
   return server;
 };
 
-await serveStdio(factory);
+export { factory };
+
+// stdio starts only when this file is the entry point; http.mjs imports the factory without it.
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
+  await serveStdio(factory);
+}

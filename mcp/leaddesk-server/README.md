@@ -18,6 +18,14 @@ cd mcp/leaddesk-server && npm install
 node src/server.mjs        # чекає на JSON-RPC у stdin
 ```
 
+## HTTP-варіант (бонус E1)
+
+```bash
+node src/http.mjs        # http://127.0.0.1:3333/mcp, лише локально
+```
+
+Та сама фабрика, що в `server.mjs` (вона експортується звідти). Гварди Host і Origin викликаються в самому обробнику запиту. Потрібен пакет `@modelcontextprotocol/node` 2.1.0.
+
 ## Перевірка в Inspector (з кореня репозиторію)
 
 ```bash
