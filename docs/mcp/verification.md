@@ -1,6 +1,6 @@
 # Перевірка (Task A, Task B, Task E)
 
-- **Інструмент і версія, модель:** Claude Code · Claude Sonnet 5.5
+- **Інструмент і версія, модель:** Claude Code 2.1.252 (сесія перевірки Task A) і 2.1.296 (Task B–C) · Sonnet 5
 - **ОС і термінал, Node:** macOS (Darwin 24.6.0) · zsh · Node v24.21.0
 
 ## Task A — сервер в Inspector
