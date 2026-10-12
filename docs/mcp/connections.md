@@ -14,6 +14,7 @@
 
 ## Supabase: схема й сид
 
+- Міграція `supabase/migrations/0002_leads_rls.sql` (застосована окремо через `apply_migration`, запис схвалено вручну) вмикає RLS на `public.leads` і знімає права `anon` та `authenticated` без жодних політик; перевірка: `select relrowsecurity from pg_class where oid = 'public.leads'::regclass` → `true`. Роль `postgres`, під якою працює агент, RLS не обмежує. Вона з'явилась після рев'ю: у `0001` RLS не вмикали, і `list_tables` попереджав, що таблиця відкрита для публічного ключа.
 - Міграція `supabase/migrations/0001_leaddesk.sql` створює таблицю `public.leads` (`id`, `full_name`, `company`, `email`, `source`, `status` з `check` на п'ять статусів, `budget`, `message`, `created_at`)
 - Сид `supabase/seed/leads.sql`: 20 рядків, `lead_0001`–`lead_0020`, ті самі, що в `materials/leads.json`
 - Скільки інструментів Supabase видно в `/mcp` із вашим URL: 9
