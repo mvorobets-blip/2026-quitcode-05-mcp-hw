@@ -11,3 +11,4 @@ create table if not exists public.leads (
   message text not null,
   created_at timestamptz not null
 );
+-- RLS і права ролей anon та authenticated закриває міграція 0002_leads_rls.sql.

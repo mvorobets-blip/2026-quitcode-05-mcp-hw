@@ -37,7 +37,7 @@
 - **Варіант:** E1, власний сервер по HTTP із захистом Host/Origin: `mcp/leaddesk-server/src/http.mjs`.
 - **Фабрика:** та сама, що в stdio-сервері. `server.mjs` тепер експортує `factory` і запускає `serveStdio` лише тоді, коли його запущено напряму (порівняння `import.meta.url` із шляхом точки входу), тож `http.mjs` імпортує фабрику, не запускаючи stdio. Інструменти й ресурс лишились у `server.mjs`. Регресія stdio: Inspector `tools/list` і `resources/read` дали файли, побайтово ідентичні `docs/mcp/tools-list.json` і `docs/mcp/resource-read.json`, і з кореня репозиторію, і з відносного шляху з іншої теки.
 - **Залежність:** у `mcp/leaddesk-server/package.json` додано `"@modelcontextprotocol/node": "2.1.0"` (точна версія; дозволений виняток для E1). Кореневі `package.json` і `package-lock.json` не змінено.
-- **Гварди:** `localhostHostValidation()` і `localhostOriginValidation()` викликаються самим кодом на початку обробника (`if (!checkHost(req, res)) return;`). Передавати їх опцією в `toNodeHandler` не можна: її мовчки ігнорують, і сервер відповідає 200 на підроблений `Host`. Слухаємо лише `127.0.0.1:3333`.
+- **Гварди:** `localhostHostValidation()` і `localhostOriginValidation()` викликаються самим кодом на початку обробника (`if (!checkHost(req, res)) return;`). Передавати їх опцією в `toNodeHandler` не можна: її мовчки ігнорують (це зі слів walkthrough; власною перевіркою я цього не підтвердив), і сервер відповідає 200 на підроблений `Host`. Слухаємо лише `127.0.0.1:3333`.
 - **Запуск і докази** (`node mcp/leaddesk-server/src/http.mjs`, потім чотири `curl` із `body.json`, який лежить поза репозиторієм і не комітиться):
 
 | Запит | Відповідь |
